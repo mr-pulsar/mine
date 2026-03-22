@@ -141,6 +141,33 @@
         .splash-hidden { transform: translateY(-100%); opacity: 0; pointer-events: none; }
         .text-break-safe { word-break: break-word; overflow-wrap: break-word; }
 
+        /* ===== TOAST NOTIFICATION ===== */
+        #toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(20,20,20,0.95);
+            border: 1px solid rgba(255,126,95,0.4);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 99999;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: nowrap;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,126,95,0.1);
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
         /* ===== CHATBOT STYLES ===== */
         #chat-widget {
             position: fixed;
@@ -403,12 +430,26 @@
             transform: translateY(-1px);
         }
 
+        /* ===== MOBILE RESPONSIVENESS IMPROVEMENTS ===== */
         @media (max-width: 400px) {
             #chat-panel { width: calc(100vw - 32px); }
+            #chat-widget { bottom: 16px; right: 16px; }
         }
+
+        @media (max-width: 640px) {
+            #chat-widget { bottom: 16px; right: 16px; }
+            #chat-panel { width: calc(100vw - 32px); max-height: 80vh; }
+        }
+
+        /* Contact form button state */
+        .glow-button:active { transform: scale(0.98); }
+        .glow-button.loading { opacity: 0.7; pointer-events: none; }
     </style>
 </head>
 <body class="antialiased selection:bg-orange-500 selection:text-white relative">
+
+    <!-- ===== TOAST NOTIFICATION ===== -->
+    <div id="toast"></div>
 
     <!-- ================= INTRO / SPLASH SCREEN ================= -->
     <div id="splash-screen" class="fixed inset-0 z-[100] bg-[#030303] flex items-center justify-center">
@@ -446,6 +487,13 @@
                 <button type="button" onclick="navScrollTo('services')" class="px-3 lg:px-4 py-2 rounded-lg hover:text-white hover:bg-white/5 transition cursor-pointer focus:outline-none whitespace-nowrap">Services</button>
                 <button type="button" onclick="navScrollTo('clients')" class="px-3 lg:px-4 py-2 rounded-lg hover:text-white hover:bg-white/5 transition cursor-pointer focus:outline-none whitespace-nowrap">Clients</button>
                 <button type="button" onclick="navigate('careers')" class="px-3 lg:px-4 py-2 rounded-lg hover:text-white hover:bg-white/5 transition cursor-pointer text-orange-400 focus:outline-none whitespace-nowrap">Careers</button>
+                <a href="https://www.linkedin.com/company/lunarfoxai" target="_blank" rel="noopener noreferrer"
+                   class="px-3 lg:px-4 py-2 rounded-lg hover:text-white hover:bg-white/5 transition cursor-pointer focus:outline-none flex items-center gap-1.5 whitespace-nowrap">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    LinkedIn
+                </a>
                 <button type="button" onclick="navScrollTo('contact')" class="ml-2 lg:ml-3 px-4 lg:px-6 py-2 lg:py-2.5 text-sm font-bold rounded-full bg-white text-black hover:bg-gray-200 hover:scale-105 transition-all duration-300 focus:outline-none whitespace-nowrap">
                     Contact Us
                 </button>
@@ -463,11 +511,9 @@
         </div>
     </nav>
 
-    <!-- Mobile Menu Overlay — starts hidden via style, toggled by JS -->
+    <!-- Mobile Menu Overlay -->
     <div id="mobile-menu" style="display:none;" class="fixed inset-0 bg-[#030303]/98 backdrop-blur-3xl z-[60] transition-opacity duration-300 opacity-0">
-        <!-- Centered column of links -->
         <div class="flex flex-col items-center justify-center min-h-full gap-2 px-8 py-20">
-            <!-- Divider label -->
             <p class="text-xs text-gray-600 uppercase tracking-[0.25em] font-semibold mb-4">Navigate</p>
 
             <button type="button" onclick="mobileNavigate('home')"
@@ -486,6 +532,14 @@
                 class="w-full max-w-xs text-center text-2xl font-bold text-orange-400 hover:text-white active:scale-95 transition-all duration-200 py-3 rounded-2xl hover:bg-orange-500/10 focus:outline-none">
                 Careers ✦
             </button>
+            <a href="https://www.linkedin.com/company/lunarfoxai" target="_blank" rel="noopener noreferrer"
+               onclick="closeMobileMenu()"
+               class="w-full max-w-xs text-center text-2xl font-bold text-white hover:text-orange-400 active:scale-95 transition-all duration-200 py-3 rounded-2xl hover:bg-white/5 flex items-center justify-center gap-2">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+                LinkedIn
+            </a>
 
             <div class="w-16 h-px bg-white/10 my-2"></div>
 
@@ -724,6 +778,7 @@
             </div>
         </section>
 
+        <!-- ===== CONTACT SECTION ===== -->
         <section id="contact" class="max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-32 reveal">
             <div class="glass-card rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 md:p-20 text-center relative overflow-hidden">
                 <div class="absolute -top-20 -right-20 w-64 sm:w-96 h-64 sm:h-96 bg-orange-600/20 rounded-full blur-[120px] pointer-events-none"></div>
@@ -732,35 +787,47 @@
                 <div class="relative z-10">
                     <h2 class="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-4 sm:mb-6 tracking-tight">Start Your Project.</h2>
                     <p class="text-gray-400 mb-6 max-w-2xl mx-auto text-base sm:text-xl font-light">
-                        Lunar Fox AI is taking on new clients for web dev, dashboards, data analysis, and AI Agents automation. Fill out the secure form below.
+                        Lunar Fox AI is taking on new clients for web dev, dashboards, data analysis, and AI Agents automation. Fill out the form below.
+                    </p>
+
+                    <!-- DIRECT MAILTO FALLBACK LINK (always visible below button) -->
+                    <p class="text-xs text-gray-600 mb-6">
+                        Or email us directly at 
+                        <a href="mailto:hello@lunarfoxai.dev" class="text-orange-400 hover:text-orange-300 underline underline-offset-2 transition">hello@lunarfoxai.dev</a>
                     </p>
                     
-                    <form onsubmit="sendEmail(event)" class="max-w-xl mx-auto text-left flex flex-col gap-4 sm:gap-6">
+                    <div class="max-w-xl mx-auto text-left flex flex-col gap-4 sm:gap-6">
                         <div>
                             <label class="block text-xs sm:text-sm font-semibold text-gray-300 mb-1.5 sm:mb-2 tracking-wide">Name</label>
-                            <input type="text" id="contact-name" placeholder="John Doe" required 
+                            <input type="text" id="contact-name" placeholder="John Doe" 
                                 class="form-input w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base text-white placeholder-gray-600 transition-all duration-300">
                         </div>
 
                         <div>
                             <label class="block text-xs sm:text-sm font-semibold text-gray-300 mb-1.5 sm:mb-2 tracking-wide">Purpose</label>
-                            <input type="text" id="contact-purpose" placeholder="e.g. AI Agents Integration" required 
+                            <input type="text" id="contact-purpose" placeholder="e.g. AI Agents Integration" 
                                 class="form-input w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base text-white placeholder-gray-600 transition-all duration-300">
                         </div>
 
                         <div>
                             <label class="block text-xs sm:text-sm font-semibold text-gray-300 mb-1.5 sm:mb-2 tracking-wide">Message</label>
-                            <textarea id="contact-message" rows="4" placeholder="Tell us about your data or automation needs..." required 
+                            <textarea id="contact-message" rows="4" placeholder="Tell us about your data or automation needs..." 
                                 class="form-input w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base text-white placeholder-gray-600 transition-all duration-300 resize-none"></textarea>
                         </div>
                         
-                        <button type="submit" class="glow-button flex items-center justify-center gap-2 sm:gap-4 px-4 sm:px-10 py-4 sm:py-5 rounded-full text-white font-bold text-sm sm:text-lg w-full mt-2 sm:mt-4 focus:outline-none">
+                        <button type="button" id="contact-btn" onclick="sendEmail()" class="glow-button flex items-center justify-center gap-2 sm:gap-4 px-4 sm:px-10 py-4 sm:py-5 rounded-full text-white font-bold text-sm sm:text-lg w-full mt-2 sm:mt-4 focus:outline-none">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-orange-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                             <span class="text-break-safe">Message Us</span>
                         </button>
-                    </form>
+
+                        <!-- Fallback for browsers without mail client -->
+                        <p class="text-center text-xs text-gray-600 -mt-2">
+                            If the button doesn't open your mail app, 
+                            <a href="mailto:hello@lunarfoxai.dev" class="text-orange-400 hover:underline">click here to email directly</a>.
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -834,19 +901,45 @@
 
     <!-- Footer -->
     <footer class="border-t border-white/10 bg-[#020202] py-8 sm:py-12 relative z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-4 sm:gap-6 text-center md:text-left">
-            <div class="flex items-center gap-2 text-xl sm:text-2xl font-bold text-white">
-                <div class="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
-                    <img src="image.png" alt="Lunar Fox Logo" class="w-full h-full object-contain">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <!-- Top row -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left mb-6 pb-6 border-b border-white/5">
+                <div class="flex items-center gap-2 text-xl sm:text-2xl font-bold text-white">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 shrink-0">
+                        <img src="image.png" alt="Lunar Fox Logo" class="w-full h-full object-contain">
+                    </div>
+                    Lunar Fox AI
                 </div>
-                Lunar Fox AI
+
+                <!-- Social links -->
+                <div class="flex items-center gap-4">
+                    <a href="https://www.linkedin.com/company/lunarfoxai" target="_blank" rel="noopener noreferrer"
+                       title="LunarFox AI: Overview | LinkedIn"
+                       class="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-[#0077b5] hover:bg-[#0077b5]/10 transition-all duration-300 text-sm font-medium group">
+                        <svg class="w-4 h-4 text-[#0077b5] group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                        LinkedIn
+                    </a>
+                    <a href="mailto:hello@lunarfoxai.dev"
+                       class="flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-orange-500/40 hover:bg-orange-500/10 transition-all duration-300 text-sm font-medium">
+                        <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        hello@lunarfoxai.dev
+                    </a>
+                </div>
             </div>
-            <div class="text-xs sm:text-sm text-gray-500 font-medium">
-                &copy; 2026 Lunar Fox AI. All rights reserved.
-            </div>
-            <div class="flex flex-wrap justify-center space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-500 font-medium">
-                <button type="button" onclick="navigate('privacy')" class="hover:text-white transition cursor-pointer focus:outline-none">Privacy Policy</button>
-                <button type="button" onclick="navigate('terms')" class="hover:text-white transition cursor-pointer focus:outline-none">Terms of Service</button>
+
+            <!-- Bottom row -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 text-center sm:text-left">
+                <div class="text-xs sm:text-sm text-gray-500 font-medium">
+                    &copy; 2026 Lunar Fox AI. All rights reserved.
+                </div>
+                <div class="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-500 font-medium">
+                    <button type="button" onclick="navigate('privacy')" class="hover:text-white transition cursor-pointer focus:outline-none">Privacy Policy</button>
+                    <button type="button" onclick="navigate('terms')" class="hover:text-white transition cursor-pointer focus:outline-none">Terms of Service</button>
+                </div>
             </div>
         </div>
     </footer>
@@ -872,9 +965,7 @@
             </div>
 
             <!-- Messages -->
-            <div id="chat-messages">
-                <!-- Welcome message injected by JS -->
-            </div>
+            <div id="chat-messages"></div>
 
             <!-- Quick chips -->
             <div class="quick-chips" id="quick-chips">
@@ -904,9 +995,7 @@
         <!-- Toggle Button -->
         <button id="chat-toggle-btn" onclick="toggleChat()" title="Chat with us">
             <span class="chat-notif-badge" id="chat-badge"></span>
-            <!-- Fox icon when closed -->
             <span id="chat-icon-open" class="text-2xl">🦊</span>
-            <!-- Close icon when open -->
             <span id="chat-icon-close" class="hidden">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
@@ -937,6 +1026,14 @@
         window.addEventListener("scroll", reveal);
         setTimeout(reveal, 1800);
 
+        // ===== TOAST =====
+        function showToast(msg, duration = 3500) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), duration);
+        }
+
         // ===== MOBILE MENU =====
         let menuOpen = false;
 
@@ -948,7 +1045,6 @@
 
             if (menuOpen) {
                 menu.style.display = 'block';
-                // Small tick for reflow so opacity transition triggers
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => { menu.style.opacity = '1'; });
                 });
@@ -969,7 +1065,6 @@
         }
 
         // ===== NAVIGATION =====
-        // Scroll to a section with fixed-nav offset (nav ~64px)
         function scrollToSection(sectionId) {
             const el = document.getElementById(sectionId);
             if (!el) return;
@@ -985,7 +1080,6 @@
             setTimeout(reveal, 120);
         }
 
-        // Desktop: navigate to home then scroll to section
         function navScrollTo(sectionId) {
             const homeView = document.getElementById('home-view');
             if (!homeView.classList.contains('active')) {
@@ -996,13 +1090,11 @@
             }
         }
 
-        // Mobile: close menu then navigate to a page
         function mobileNavigate(pageId) {
             closeMobileMenu();
             setTimeout(() => navigate(pageId), 320);
         }
 
-        // Mobile: close menu then scroll to section on home page
         function mobileNavScrollTo(sectionId) {
             closeMobileMenu();
             const homeView = document.getElementById('home-view');
@@ -1016,21 +1108,42 @@
             }
         }
 
-        // ===== EMAIL FORM =====
-        function sanitizeHTML(str) {
-            var temp = document.createElement('div');
-            temp.textContent = str;
-            return temp.innerHTML;
-        }
+        // ===== CONTACT FORM — FIXED "MESSAGE US" BUTTON =====
+        function sendEmail() {
+            const name    = document.getElementById('contact-name').value.trim();
+            const purpose = document.getElementById('contact-purpose').value.trim();
+            const message = document.getElementById('contact-message').value.trim();
 
-        function sendEmail(event) {
-            event.preventDefault();
-            const name = sanitizeHTML(document.getElementById('contact-name').value);
-            const purpose = sanitizeHTML(document.getElementById('contact-purpose').value);
-            const message = sanitizeHTML(document.getElementById('contact-message').value);
-            const subject = encodeURIComponent(`New Project Inquiry: ${purpose}`);
-            const body = encodeURIComponent(`Name: ${name}\nPurpose: ${purpose}\n\nMessage:\n${message}\n\n--- \nSent via Lunar Fox AI Website`);
-            window.location.href = `mailto:sanjaysakthivel2003@gmail.com?subject=${subject}&body=${body}`;
+            // Validation
+            if (!name) { showToast('⚠️ Please enter your name.'); document.getElementById('contact-name').focus(); return; }
+            if (!purpose) { showToast('⚠️ Please enter a purpose.'); document.getElementById('contact-purpose').focus(); return; }
+            if (!message) { showToast('⚠️ Please enter a message.'); document.getElementById('contact-message').focus(); return; }
+
+            // Build mailto — use raw strings, no HTML encoding
+            const subject = 'New Project Inquiry: ' + purpose;
+            const body    = 'Name: ' + name + '\nPurpose: ' + purpose + '\n\nMessage:\n' + message + '\n\n---\nSent via Lunar Fox AI Website';
+
+            const mailtoURL = 'mailto:hello@lunarfoxai.dev'
+                + '?subject=' + encodeURIComponent(subject)
+                + '&body='    + encodeURIComponent(body);
+
+            // Try opening the mail client
+            const btn = document.getElementById('contact-btn');
+            btn.classList.add('loading');
+
+            // Use a hidden <a> for maximum browser compatibility
+            const a = document.createElement('a');
+            a.href = mailtoURL;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // Restore button after a moment
+            setTimeout(() => {
+                btn.classList.remove('loading');
+                showToast('✅ Your mail client should be opening. If not, email us at hello@lunarfoxai.dev');
+            }, 800);
         }
 
         // ===== CHATBOT =====
@@ -1042,14 +1155,15 @@ About Lunar Fox AI:
 - Tech stack: Python, AI Agents, SQL, Web Development, Data Cleaning, Fine Tuning, Data Analysis, LLM, Figma, Photoshop, n8n, Data Visualization
 - Completed 5 projects so far
 - Clients include: QuickTalk Academy (EdTech), GSR Graphics (Design Studio), Black Catz (E-Commerce)
-- Contact email: sanjaysakthivel2003@gmail.com
+- Contact email: hello@lunarfoxai.dev
+- LinkedIn: https://www.linkedin.com/company/lunarfoxai
 - Currently not hiring but will post openings soon
 
 Your personality:
 - Warm, professional, and enthusiastic about AI and data
 - Keep answers concise (2-4 sentences max) and conversational
 - Use occasional emojis naturally (not excessively)
-- If someone asks about pricing, say it's custom and invite them to reach out via the contact form
+- If someone asks about pricing, say it's custom and invite them to reach out via the contact form or at hello@lunarfoxai.dev
 - If you don't know something specific, offer to connect them with the team
 - Always end responses that involve next steps by mentioning the contact form or email`;
 
@@ -1089,7 +1203,6 @@ Your personality:
             div.textContent = text;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
-
             if (role === 'user') {
                 document.getElementById('quick-chips').style.display = 'none';
             }
@@ -1153,7 +1266,7 @@ Your personality:
                 });
 
                 const data = await response.json();
-                const botReply = data.content?.[0]?.text || "Sorry, I couldn't fetch a response. Please try again or email us at sanjaysakthivel2003@gmail.com 😊";
+                const botReply = data.content?.[0]?.text || "Sorry, I couldn't fetch a response. Please email us at hello@lunarfoxai.dev 😊";
                 
                 removeTyping();
                 appendMessage('bot', botReply);
@@ -1161,7 +1274,7 @@ Your personality:
 
             } catch (err) {
                 removeTyping();
-                appendMessage('bot', "Oops! Something went wrong on my end. You can reach us directly at sanjaysakthivel2003@gmail.com 🙏");
+                appendMessage('bot', "Oops! Something went wrong on my end. You can reach us directly at hello@lunarfoxai.dev 🙏");
             }
 
             isTyping = false;
